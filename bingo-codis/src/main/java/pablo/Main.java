@@ -1,7 +1,10 @@
 package pablo;
 
 public class Main {
+
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        Cliente pablo = new Cliente();
+        pablo.generarCarton();
     }
+
 }
