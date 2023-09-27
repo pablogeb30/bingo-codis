@@ -19,13 +19,18 @@ public class Cliente {
                 cont++;
             }
         }
-        imprimirCarton();
     }
 
     public void imprimirCarton() {
         System.out.println("Carton:");
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < carton.size(); i++) {
+            if (carton.get(i) < 10) {
+                System.out.print(" ");
+            }
             System.out.print(carton.get(i) + " ");
+            if ((i + 1) % 5 == 0) {
+                System.out.println();
+            }
         }
         System.out.println();
     }
