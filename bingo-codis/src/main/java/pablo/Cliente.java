@@ -29,53 +29,55 @@ public class Cliente {
     }
 
     public void imprimirCarton() {
-        System.out.println("Carton:");
+        System.out.print("Carton: [ ");
         for (int i = 0; i < carton.size(); i++) {
             if (carton.get(i) < 10) {
                 System.out.print("0");
             }
-            System.out.print(carton.get(i) + " ");
-            if ((i + 1) % 5 == 0) {
-                System.out.println();
+            if (i != carton.size() - 1) {
+                System.out.print(carton.get(i) + ", ");
+            } else {
+                System.out.print(carton.get(i) + " ]");
             }
         }
-        System.out.println();
+        System.out.println("\n");
     }
 
     public static void main(String[] args) {
-        MulticastSocket s = null;
+        MulticastSocket socket = null;
         try {
-            InetAddress group = InetAddress.getByName(IP);
-            s = new MulticastSocket(PUERTO);
-            s.joinGroup(group);
+            InetSocketAddress group = new InetSocketAddress(InetAddress.getByName(IP), PUERTO);
+            socket = new MulticastSocket(PUERTO);
+            socket.joinGroup(group, NetworkInterface.getByName("wlan0"));
 
             Cliente cliente = new Cliente();
             cliente.generarCarton();
+            System.out.println();
             cliente.imprimirCarton();
 
             while (cliente.hayBingo == false) {
                 byte[] buffer = new byte[2];
+
                 DatagramPacket paquete = new DatagramPacket(buffer, buffer.length);
-                s.receive(paquete);
+                socket.receive(paquete);
+
                 int bola = Integer.parseInt(new String(paquete.getData()));
-                System.out.println("Ha salido la bola: " + bola + "\n");
 
                 if (cliente.carton.contains(bola)) {
                     cliente.carton.remove(cliente.carton.indexOf(bola));
+                    System.out.println("El numero " + bola + " esta en el carton");
+                    if (cliente.carton.size() != 0) {
+                        cliente.imprimirCarton();
+                    }
                 }
 
                 if (cliente.carton.isEmpty()) {
                     cliente.hayBingo = true;
+                    System.out.println("¡BINGO!\n");
+                    socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
+                    socket.close();
                 }
-
             }
-
-            System.out.println("BINGO!");
-
-            s.leaveGroup(group);
-            s.close();
-            System.out.println("Fin del juego.\n");
-
         } catch (Exception e) {
             System.out.println(e);
         }

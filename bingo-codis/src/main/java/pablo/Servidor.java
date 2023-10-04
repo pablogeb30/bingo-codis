@@ -19,13 +19,7 @@ public class Servidor {
         for (int i = 1; i <= 90; i++) {
             bombo.add(i);
         }
-    }
-
-    public int sacarBola(Random random) {
-        int bola = random.nextInt(90) + 1;
-        int num = bombo.get(bola);
-        bombo.remove(bola);
-        return num;
+        Collections.shuffle(bombo);
     }
 
     public void imprimirBombo() {
@@ -43,31 +37,34 @@ public class Servidor {
     }
 
     public static void main(String[] args) {
-        MulticastSocket s = null;
+        MulticastSocket socket = null;
         try {
-            InetAddress group = InetAddress.getByName(IP);
-            s = new MulticastSocket(PUERTO);
-            s.joinGroup(group);
+            InetSocketAddress group = new InetSocketAddress(InetAddress.getByName(IP), PUERTO);
+            socket = new MulticastSocket(PUERTO);
+            socket.joinGroup(group, NetworkInterface.getByName("wlan0"));
 
             Servidor servidor = new Servidor();
-            Random random = new Random();
             servidor.generarBombo();
+            System.out.println();
             servidor.imprimirBombo();
 
             for (int i = 0; i < 90; i++) {
-                int bola = servidor.sacarBola(random);
+                int bola = servidor.bombo.get(i);
                 String mensaje = String.format("%02d", bola);
+
                 byte[] buffer = mensaje.getBytes();
-                DatagramPacket paquete = new DatagramPacket(buffer, buffer.length, group, PUERTO);
-                s.send(paquete);
-                System.out.println("Ha salido la bola: " + bola + "\n");
-                Thread.sleep(1000);
+                DatagramPacket paquete = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(IP), PUERTO);
+                socket.send(paquete);
+
+                System.out.println("Ha salido la bola: " + bola);
+                System.out.println("Quedan " + (90 - i - 1) + " bolas\n");
+                Thread.sleep(100);
             }
 
-            s.leaveGroup(group);
-            s.close();
-            System.out.println("Fin del juego.\n");
+            socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
+            socket.close();
 
+            System.out.println("¡FIN DEL JUEGO!\n");
         } catch (Exception e) {
             System.out.println(e);
         }
