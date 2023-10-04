@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Servidor",
+            "request": "launch",
+            "mainClass": "pablo.Servidor",
+            "projectName": "bingo-codis"
+        },
+        {
+            "type": "java",
+            "name": "Cliente",
+            "request": "launch",
+            "mainClass": "pablo.Cliente",
+            "projectName": "bingo-codis"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"
