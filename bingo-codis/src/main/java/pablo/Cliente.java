@@ -10,10 +10,11 @@ public class Cliente {
     private static final int PUERTO = 6789;
 
     private ArrayList<Integer> carton;
-    private boolean hayBingo = false;
+    private boolean hayBingo;
 
     public Cliente() {
         this.carton = new ArrayList<Integer>();
+        hayBingo = false;
     }
 
     public void generarCarton() {
@@ -58,24 +59,27 @@ public class Cliente {
             while (cliente.hayBingo == false) {
                 byte[] buffer = new byte[2];
 
-                DatagramPacket paquete = new DatagramPacket(buffer, buffer.length);
-                socket.receive(paquete);
+                DatagramPacket bola = new DatagramPacket(buffer, buffer.length);
+                socket.receive(bola);
 
-                int bola = Integer.parseInt(new String(paquete.getData()));
+                int num = Integer.parseInt(new String(bola.getData()));
 
-                if (cliente.carton.contains(bola)) {
-                    cliente.carton.remove(cliente.carton.indexOf(bola));
-                    System.out.println("El numero " + bola + " esta en el carton");
+                if (cliente.carton.contains(num)) {
+                    cliente.carton.remove(cliente.carton.indexOf(num));
+                    System.out.println("El numero " + num + " esta en el carton");
                     if (cliente.carton.size() != 0) {
                         cliente.imprimirCarton();
                     }
                 }
 
                 if (cliente.carton.isEmpty()) {
-                    cliente.hayBingo = true;
-                    System.out.println("¡BINGO!\n");
+                    byte[] mensaje = "BINGO".getBytes();
+                    DatagramPacket respuesta = new DatagramPacket(mensaje, mensaje.length, group);
+                    socket.send(respuesta);
                     socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
                     socket.close();
+                    System.out.println("¡BINGO!\n");
+                    cliente.hayBingo = true;
                 }
             }
         } catch (Exception e) {
