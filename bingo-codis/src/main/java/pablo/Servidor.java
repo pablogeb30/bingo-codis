@@ -11,8 +11,8 @@ public class Servidor extends Thread {
 
     private ArrayList<Integer> bombo;
 
-    public Servidor() {
-        super();
+    public Servidor(String name) {
+        super(name);
         this.bombo = new ArrayList<Integer>();
     }
 
@@ -41,17 +41,23 @@ public class Servidor extends Thread {
     public void run() {
         MulticastSocket socket = null;
         try {
-            InetSocketAddress group = new InetSocketAddress(InetAddress.getByName(IP), PUERTO);
             socket = new MulticastSocket(PUERTO);
+            socket.setLoopbackMode(false);
+            InetSocketAddress group = new InetSocketAddress(InetAddress.getByName(IP), PUERTO);
             socket.joinGroup(group, NetworkInterface.getByName("wlan0"));
 
             byte[] buffer = new byte[5];
             DatagramPacket paquete = new DatagramPacket(buffer, buffer.length);
-            socket.receive(paquete);
-            System.out.println("¡FIN DEL JUEGO!\n");
 
-            socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
-            socket.close();
+            while (true) {
+                socket.receive(paquete);
+                System.out.println(new String(paquete.getData()));
+                System.out.println("¡FIN DEL JUEGO!\n");
+
+                socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
+                socket.close();
+            }
+
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -60,10 +66,10 @@ public class Servidor extends Thread {
     public static void main(String[] args) {
         MulticastSocket socket = null;
         try {
-            Servidor servidor = new Servidor();
+            Servidor servidor = new Servidor("Emisor");
             socket = new MulticastSocket(PUERTO);
 
-            Thread hiloEscucha = new Thread();
+            Thread hiloEscucha = new Servidor("Receptor");
             hiloEscucha.start();
 
             servidor.generarBombo();
