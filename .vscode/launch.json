@@ -3,6 +3,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Cliente",
+            "request": "launch",
+            "mainClass": "Cliente",
+            "projectName": "bingo-codis"
+        },
+        {
+            "type": "java",
+            "name": "Servidor",
+            "request": "launch",
+            "mainClass": "Servidor",
+            "projectName": "bingo-codis"
+        },
+        {
+            "type": "java",
             "name": "Servidor",
             "request": "launch",
             "mainClass": "pablo.Servidor",

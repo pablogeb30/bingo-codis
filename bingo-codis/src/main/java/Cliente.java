@@ -1,5 +1,3 @@
-package pablo;
-
 import java.net.*;
 import java.util.*;
 
@@ -59,27 +57,38 @@ public class Cliente {
             while (cliente.hayBingo == false) {
                 byte[] buffer = new byte[2];
 
-                DatagramPacket bola = new DatagramPacket(buffer, buffer.length);
-                socket.receive(bola);
+                while (true) {
+                    DatagramPacket bola = new DatagramPacket(buffer, buffer.length);
+                    socket.receive(bola);
 
-                int num = Integer.parseInt(new String(bola.getData()));
+                    if (!new String(bola.getData()).equals("BINGO")) {
+                        int num = Integer.parseInt(new String(bola.getData()));
 
-                if (cliente.carton.contains(num)) {
-                    cliente.carton.remove(cliente.carton.indexOf(num));
-                    System.out.println("El numero " + num + " esta en el carton");
-                    if (cliente.carton.size() != 0) {
-                        cliente.imprimirCarton();
+                        if (cliente.carton.contains(num)) {
+                            cliente.carton.remove(cliente.carton.indexOf(num));
+                            System.out.println("El numero " + num + " esta en el carton");
+                            if (cliente.carton.size() != 0) {
+                                cliente.imprimirCarton();
+                            }
+                        }
+
+                    } else {
+                        System.out.println("¡FIN DEL JUEGO!\n");
+                        socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
+                        socket.close();
+                        break;
                     }
-                }
 
-                if (cliente.carton.isEmpty()) {
-                    byte[] mensaje = "BINGO".getBytes();
-                    DatagramPacket respuesta = new DatagramPacket(mensaje, mensaje.length, group);
-                    socket.send(respuesta);
-                    socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
-                    socket.close();
-                    System.out.println("¡BINGO!\n");
-                    cliente.hayBingo = true;
+                    if (cliente.carton.isEmpty()) {
+                        byte[] mensaje = "BINGO".getBytes();
+                        DatagramPacket respuesta = new DatagramPacket(mensaje, mensaje.length, group);
+                        socket.send(respuesta);
+                        socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
+                        socket.close();
+                        System.out.println("¡BINGO!\n");
+                        cliente.hayBingo = true;
+                    }
+
                 }
             }
         } catch (Exception e) {
