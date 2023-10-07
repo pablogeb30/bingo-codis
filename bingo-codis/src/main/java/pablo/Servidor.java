@@ -42,22 +42,22 @@ public class Servidor extends Thread {
         MulticastSocket socket = null;
         try {
             socket = new MulticastSocket(PUERTO);
-            socket.setLoopbackMode(false);
             InetSocketAddress group = new InetSocketAddress(InetAddress.getByName(IP), PUERTO);
             socket.joinGroup(group, NetworkInterface.getByName("wlan0"));
 
             byte[] buffer = new byte[5];
-            DatagramPacket paquete = new DatagramPacket(buffer, buffer.length);
 
             while (true) {
+                DatagramPacket paquete = new DatagramPacket(buffer, buffer.length);
                 socket.receive(paquete);
-                System.out.println(new String(paquete.getData()));
-                System.out.println("¡FIN DEL JUEGO!\n");
 
-                socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
-                socket.close();
+                if (new String(paquete.getData()).equals("BINGO")) {
+                    System.out.println("¡FIN DEL JUEGO!\n");
+                    socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
+                    socket.close();
+                    break;
+                }
             }
-
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -86,7 +86,7 @@ public class Servidor extends Thread {
 
                 System.out.println("Ha salido la bola: " + bola);
                 System.out.println("Quedan " + (90 - i - 1) + " bolas\n");
-                Thread.sleep(300);
+                Thread.sleep(200);
             }
 
             hiloEscucha.join();
