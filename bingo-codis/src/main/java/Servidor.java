@@ -21,20 +21,6 @@ public class Servidor extends Thread {
         Collections.shuffle(bombo);
     }
 
-    public void imprimirBombo() {
-        System.out.println("Bombo:");
-        for (int i = 0; i < bombo.size(); i++) {
-            if (bombo.get(i) < 10) {
-                System.out.print("0");
-            }
-            System.out.print(bombo.get(i) + " ");
-            if ((i + 1) % 10 == 0) {
-                System.out.println();
-            }
-        }
-        System.out.println();
-    }
-
     @Override
     public void run() {
         MulticastSocket socket = null;
@@ -42,15 +28,12 @@ public class Servidor extends Thread {
             socket = new MulticastSocket(PUERTO);
             InetSocketAddress group = new InetSocketAddress(InetAddress.getByName(IP), PUERTO);
             socket.joinGroup(group, NetworkInterface.getByName("wlan0"));
-
-            byte[] buffer = new byte[5];
-
+            byte[] buffer = new byte[2];
             while (true) {
                 DatagramPacket paquete = new DatagramPacket(buffer, buffer.length);
                 socket.receive(paquete);
-
-                if (new String(paquete.getData()).equals("BINGO")) {
-                    System.out.println("¡FIN DEL JUEGO!\n");
+                if (new String(paquete.getData()).equals("GG")) {
+                    System.out.println("¡FIN DEL JUEGO!\nLA PARTIDA HA TERMINADO\n");
                     socket.leaveGroup(group, NetworkInterface.getByName("wlan0"));
                     socket.close();
                     break;
@@ -66,30 +49,26 @@ public class Servidor extends Thread {
         try {
             Servidor servidor = new Servidor("Emisor");
             socket = new MulticastSocket(PUERTO);
-
             Thread hiloEscucha = new Servidor("Receptor");
             hiloEscucha.start();
-
             servidor.generarBombo();
             System.out.println();
-            servidor.imprimirBombo();
-
             for (int i = 0; i < 90 && hiloEscucha.isAlive(); i++) {
                 int bola = servidor.bombo.get(i);
                 String mensaje = String.format("%02d", bola);
-
                 byte[] buffer = mensaje.getBytes();
                 DatagramPacket paquete = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(IP), PUERTO);
                 socket.send(paquete);
-
                 System.out.println("Ha salido la bola: " + bola);
-                System.out.println("Quedan " + (90 - i - 1) + " bolas\n");
-                Thread.sleep(200);
+                if (i == 88) {
+                    System.out.println("Queda " + (90 - i - 1) + " bola\n");
+                } else {
+                    System.out.println("Quedan " + (90 - i - 1) + " bolas\n");
+                }
+                Thread.sleep(50);
             }
-
             hiloEscucha.join();
             socket.close();
-
         } catch (Exception e) {
             System.out.println(e);
         }
